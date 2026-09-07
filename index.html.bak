@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hari Priya Tumuluri — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F0DE;
+    --paper-2:#F1E9D2;
+    --paper-edge-1:#EDE3C4;
+    --paper-edge-2:#E4D8B4;
+    --paper-edge-3:#DACBA2; 
+    --paper-edge-4:#CFBE92;
+    --paper-edge-5:#C4B182;
+
+    --cover-1:#59010a;
+    --cover-2:#59010a;
+    --cover-3:#59010a;
+
+    --ink:#2B2620;
+    --ink-soft:#5B5346;
+    --burgundy:#A63A3A;
+    --sage:#748468;
+    --dusty-blue:#5F81A3;
+    --mustard:#D6A23C;
+    --terracotta:#C46A46;
+
+    --brass-1:#4A3212;
+    --brass-2:#8A6633;
+    --brass-3:#C69A5E;
+    --brass-4:#F0D89A;
+    --brass-5:#F8E4B0;
+    --brass-6:#E5C07E;
+    --brass-7:#A87E44;
+    --brass-8:#6A481C;
+
+    --nav-ink: #EDE7D8;
+
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-hand: 'Caveat', 'Segoe Print', cursive;
+    --font-hand-2: 'DM Sans', Arial, sans-serif;
+    --font-tab: 'Caveat', 'Segoe Print', cursive;
+    --font-body: 'DM Sans', Arial, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:#6f806a;
+    font-family: var(--font-body);
+    color: var(--ink);
+    overflow:hidden;
+  }
+
+  /* ---------- TOP-LEVEL NAV ---------- */
+  .site-header{
+    position:fixed; top:0; left:0; right:0; z-index:900;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 26px clamp(20px,4vw,56px);
+    pointer-events:none;
+  }
+  .site-brand{
+    font-family:'Young Serif', Georgia, serif; font-size:25px; font-weight:400;
+    color: var(--nav-ink); opacity:.98; pointer-events:auto;
+    letter-spacing:.2px; background:none; border:0; padding:0;
+    cursor:pointer; text-shadow:0 2px 10px rgba(0,0,0,.3);
+  }
+  .site-nav{ display:flex; gap: clamp(18px,2.4vw,36px); pointer-events:auto; }
+  .site-nav a{
+    font-family: var(--font-body); font-weight:700; font-size:13px;
+    letter-spacing: 2px; text-transform:uppercase;
+    color: rgba(237,231,216,.88);
+    text-decoration:none; cursor:pointer;
+    position:relative; padding-bottom:4px;
+    transition: color .2s ease;
+  }
+  .site-nav a::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:1px;
+    background: var(--nav-ink); transition: right .3s ease;
+  }
+  .site-nav a:hover, .site-nav a.active{ color: var(--nav-ink); }
+  .site-nav a:hover::after, .site-nav a.active::after{ right:0; }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative;
+    width:100vw; height:100vh;
+    perspective: 3600px;
+    overflow:hidden;
+    background:
+      linear-gradient(rgba(0,0,0,0.04), rgba(0,0,0,0.04)),
+      url("images/craftmat.png") center / cover no-repeat;
+    cursor:grab;
+    touch-action:none;
+  }
+  .stage.is-dragging{
+    cursor:grabbing;
+  }
+
+  /* The viewport reveals a larger craft table that pans as one surface. */
+  .craft-workspace{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:max(2100px, 100vw);
+    height:max(1400px, 100vh);
+    transform:translate(calc(-50% + var(--workspace-x, 0px)), calc(-50% + var(--workspace-y, 0px)));
+    transform-origin:center center;
+    border-radius:0;
+    background:
+      linear-gradient(rgba(0,0,0,0.04), rgba(0,0,0,0.04)),
+      url("images/craftmat.png") center / 100% 100% no-repeat;
+    box-shadow:0 38px 70px rgba(0,0,0,0.36), 0 0 0 10px rgba(0,0,0,0.08);
+    overflow:visible;
+    z-index:1;
+    will-change:transform;
+  }
+  .craft-item{
+    position:absolute;
+    display:block;
+    height:auto;
+    pointer-events:auto;
+    user-select:none;
+    filter:drop-shadow(0 16px 12px rgba(0,0,0,0.28));
+    z-index:1;
+  }
+  .craft-item:hover{ transform:translateY(-8px) rotate(calc(var(--item-rotation) + 4deg)); }
+  .craft-ribbon{ --item-rotation:-12deg; width:300px; left:280px; top:170px; transform:rotate(var(--item-rotation)); }
+  .craft-glue-stick{ --item-rotation:18deg; width:235px; right:260px; top:220px; transform:rotate(var(--item-rotation)); }
+  .craft-glue{ --item-rotation:-18deg; width:145px; left:400px; bottom:250px; transform:rotate(var(--item-rotation)); }
+  .craft-scissors{ --item-rotation:-9deg; width:270px; right:300px; bottom:220px; transform:rotate(var(--item-rotation)); }
+  .craft-tape{ --item-rotation:8deg; width:220px; right:230px; top:545px; transform:rotate(var(--item-rotation)); }
+
+  /* ---------- BOOK SHELL (hard cover base) ---------- */
+  .book-shell{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:1320px;
+    height:825px;
+    transform:translate(-50%, -50%) scale(var(--book-scale, 1));
+    transform-origin:center center;
+    z-index:1;
+    padding: 22px 22px 34px 22px;
+    border-radius: 8px;
+    background:
+      /* velvet grain */
+      repeating-linear-gradient(115deg,
+        rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px,
+        transparent 1px, transparent 3px),
+      repeating-linear-gradient(25deg,
+        rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px,
+        transparent 1px, transparent 4px),
+      /* base velvet colour */
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(28,0,4,0.22) 0%, transparent 60%),
+      linear-gradient(135deg, var(--cover-1) 0%, var(--cover-2) 55%, var(--cover-3) 100%);
+    box-shadow:
+      /* cover thickness (stacked shadows for a "chunky book" look) */
+      0 2px 0 #430007,
+      0 4px 0 #350006,
+      0 6px 0 #290004,
+      0 8px 0 #1d0003,
+      /* ambient drop shadow onto the "desk" */
+      0 40px 60px -10px rgba(0,0,0,0.7),
+      0 20px 30px rgba(0,0,0,0.4),
+      /* inner edge highlight (velvet catches light) */
+      inset 0 0 0 1px rgba(255,255,255,0.04),
+      inset 0 2px 8px rgba(255,255,255,0.05),
+      inset 0 -6px 20px rgba(0,0,0,0.5);
+  }
+
+  /* subtle worn-corner highlights on the hardcover */
+  .book-shell::before, .book-shell::after{
+    content:''; position:absolute;
+    width:80px; height:80px; pointer-events:none; z-index:0;
+    background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.08), transparent 60%);
+  }
+  .book-shell::before{ top:0; left:0; border-radius:8px 0 0 0; }
+  .book-shell::after{ bottom:0; right:0; transform: rotate(180deg); border-radius:0 0 8px 0; }
+
+  /* ---------- PAGES CONTAINER ---------- */
+  .book-pages{
+    position:relative;
+    width:100%; height:100%;
+    z-index:2;
+    transform-style: preserve-3d;
+    /* fake page-stack depth using layered box-shadows on each side */
+    box-shadow:
+      /* left side page stack */
+      -1px 2px 0 var(--paper-edge-1),
+      -2px 3px 0 var(--paper-edge-2),
+      -3px 4px 0 var(--paper-edge-3),
+      -4px 5px 0 var(--paper-edge-4),
+      -5px 6px 0 var(--paper-edge-5),
+      /* right side page stack */
+      1px 2px 0 var(--paper-edge-1),
+      2px 3px 0 var(--paper-edge-2),
+      3px 4px 0 var(--paper-edge-3),
+      4px 5px 0 var(--paper-edge-4),
+      5px 6px 0 var(--paper-edge-5),
+      /* pop-off shadow */
+      0 12px 20px rgba(0,0,0,0.35);
+  }
+
+  /* ---------- BOARDS (the static current spread) ---------- */
+  .board{
+    position:absolute; top:0; width:50%; height:100%;
+    background: var(--paper);
+    overflow:hidden;
+    padding: clamp(20px, 2.6vw, 40px);
+    display:flex; flex-direction:column;
+    /* subtle paper grain */
+    background-image:
+      radial-gradient(rgba(90,70,40,0.03) 1px, transparent 1px),
+      radial-gradient(rgba(90,70,40,0.02) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px;
+    background-position: 0 0, 2px 2px;
+  }
+  .board-left{ left:0; }
+  .board-right{ right:0; }
+
+  /* inner shadow near the spine (creates the "gutter" fold) */
+  .board-left::after{
+    content:''; position:absolute; top:0; bottom:0; right:0; width:40px;
+    background: linear-gradient(to left, rgba(0,0,0,0.16), transparent);
+    pointer-events:none;
+  }
+  .board-right::after{
+    content:''; position:absolute; top:0; bottom:0; left:0; width:40px;
+    background: linear-gradient(to right, rgba(0,0,0,0.16), transparent);
+    pointer-events:none;
+  }
+
+  /* ---------- ANIMATING LEAF ---------- */
+  .flip-leaf{
+    position:absolute; top:0; right:0;
+    width:50%; height:100%;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    z-index: 300;
+    display:none;
+    will-change: transform;
+  }
+  .flip-leaf .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    background: var(--paper);
+    overflow:hidden;
+    padding: clamp(20px, 2.6vw, 40px);
+    display:flex; flex-direction:column;
+    background-image:
+      radial-gradient(rgba(90,70,40,0.03) 1px, transparent 1px),
+      radial-gradient(rgba(90,70,40,0.02) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px;
+  }
+  .flip-leaf .face.front{ z-index:2; }
+  .flip-leaf .face.back{ transform: rotateY(180deg); z-index:1; }
+
+  .flip-leaf .face.front::after{
+    content:''; position:absolute; top:0; bottom:0; left:0; width:40px;
+    background: linear-gradient(to right, rgba(0,0,0,0.16), transparent);
+    pointer-events:none;
+  }
+  .flip-leaf .face.back::after{
+    content:''; position:absolute; top:0; bottom:0; right:0; width:40px;
+    background: linear-gradient(to left, rgba(0,0,0,0.16), transparent);
+    pointer-events:none;
+  }
+
+  /* moving specular shadow that follows the flip */
+  .flip-leaf::before{
+    content:'';
+    position:absolute; inset:0;
+    z-index:5; pointer-events:none;
+    background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%);
+    opacity:0;
+  }
+  .flip-leaf.is-flipping::before{
+    animation: leafShade 0.9s cubic-bezier(.55,.05,.25,1);
+  }
+  @keyframes leafShade{
+    0%{ opacity:0; }
+    45%{ opacity:0.55; }
+    55%{ opacity:0.55; }
+    100%{ opacity:0; }
+  }
+
+  /* ---------- RING BINDER (pure CSS) ---------- */
+  .spine{
+    position:absolute;
+    left:50%;
+    top:-8px; bottom:-8px;
+    width: 46px;
+    transform: translateX(-50%);
+    z-index: 550;
+    pointer-events:none;
+  }
+  /* rod = central metallic bar */
+  .rod{
+    position:absolute;
+    left:50%;
+    top:2%; bottom:2%;
+    width: 13px;
+    transform: translateX(-50%);
+    border-radius: 3px;
+    background:
+      linear-gradient(90deg,
+        var(--brass-1) 0%,
+        var(--brass-2) 10%,
+        var(--brass-3) 25%,
+        var(--brass-4) 42%,
+        var(--brass-5) 50%,
+        var(--brass-6) 60%,
+        var(--brass-7) 78%,
+        var(--brass-2) 92%,
+        var(--brass-1) 100%);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.55),
+      inset 0 -1px 1px rgba(0,0,0,0.4),
+      0 2px 6px rgba(0,0,0,0.5);
+    z-index: 3;
+  }
+  /* end caps (top & bottom locking discs) */
+  .cap{
+    position:absolute;
+    left:50%;
+    transform: translateX(-50%);
+    width: 22px; height: 13px;
+    border-radius: 5px;
+    background:
+      linear-gradient(90deg,
+        var(--brass-1) 0%,
+        var(--brass-3) 20%,
+        var(--brass-5) 50%,
+        var(--brass-3) 80%,
+        var(--brass-1) 100%);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.55),
+      inset 0 -1px 1px rgba(0,0,0,0.4),
+      0 2px 4px rgba(0,0,0,0.5);
+    z-index: 4;
+  }
+  .cap::after{
+    content:'';
+    position:absolute;
+    left:50%; top:50%;
+    transform: translate(-50%,-50%);
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #3a2810 0%, #6a481c 60%, #2a1a08 100%);
+    box-shadow: inset 0 0 1px rgba(0,0,0,0.9);
+  }
+  .cap.top{ top:0; }
+  .cap.bot{ bottom:0; }
+
+  /* individual rings */
+  .ring{
+    position:absolute;
+    left:50%;
+    transform: translate(-50%,-50%);
+    width: 44px;
+    height: 15px;
+    border-radius: 50%;
+    background:
+      linear-gradient(180deg,
+        var(--brass-1) 0%,
+        var(--brass-2) 12%,
+        var(--brass-3) 24%,
+        var(--brass-4) 40%,
+        var(--brass-5) 52%,
+        var(--brass-6) 64%,
+        var(--brass-7) 78%,
+        var(--brass-8) 90%,
+        var(--brass-1) 100%);
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.6),
+      inset 0 -1px 1px rgba(0,0,0,0.5),
+      0 3px 5px rgba(0,0,0,0.45);
+    z-index: 2;
+  }
+  /* inner "hole" of the ring — a darker slot inside */
+  .ring::after{
+    content:'';
+    position:absolute;
+    left:50%; top:50%;
+    transform: translate(-50%,-50%);
+    width: 34px; height: 4px;
+    border-radius: 50%;
+    background:
+      radial-gradient(ellipse at center,
+        rgba(0,0,0,0.35) 0%,
+        rgba(0,0,0,0.15) 50%,
+        transparent 100%);
+  }
+  /* 6 rings — 3 top, 3 bottom, gap in middle */
+  .r1{ top:14%; } .r2{ top:24%; } .r3{ top:34%; }
+  .r4{ top:66%; } .r5{ top:76%; } .r6{ top:86%; }
+
+  /* ---------- CORNER PAGE-TURN ZONES ---------- */
+  .turn-zone{
+    position:absolute;
+    width: 110px; height: 110px;
+    z-index: 350; cursor: pointer;
+  }
+  .turn-zone.next{ bottom:0; right:0; }
+  .turn-zone.prev{ bottom:0; left:0; }
+  .turn-zone.next-top{ top:0; right:0; }
+  .turn-zone.prev-top{ top:0; left:0; }
+
+  /* visual page-curl hint on hover */
+  .turn-zone::before{
+    content:'';
+    position:absolute;
+    width: 0; height: 0;
+    opacity: 0;
+    transition: opacity .3s ease;
+  }
+  .turn-zone.next::before, .turn-zone.next-top::before{
+    right: 0;
+    border-left: 44px solid transparent;
+    border-bottom: 44px solid rgba(210,190,150,0.55);
+    filter: drop-shadow(-2px -2px 3px rgba(0,0,0,0.25));
+  }
+  .turn-zone.next::before{ bottom: 0; }
+  .turn-zone.next-top::before{ top:0; transform: scaleY(-1); }
+  .turn-zone.prev::before, .turn-zone.prev-top::before{
+    left: 0;
+    border-right: 44px solid transparent;
+    border-bottom: 44px solid rgba(210,190,150,0.55);
+    filter: drop-shadow(2px -2px 3px rgba(0,0,0,0.25));
+  }
+  .turn-zone.prev::before{ bottom: 0; }
+  .turn-zone.prev-top::before{ top:0; transform: scaleY(-1); }
+  .turn-zone:hover::before{ opacity: 1; }
+
+  .turn-zone::after{
+    content:'';
+    position:absolute;
+    width: 30px; height: 30px; opacity:0;
+    background: transparent;
+    border-top: 1px dashed rgba(80,60,30,0.5);
+    border-right: 1px dashed rgba(80,60,30,0.5);
+    transition: opacity .3s ease;
+  }
+  .turn-zone.next::after{ bottom:14px; right:14px; }
+  .turn-zone.next-top::after{ top:14px; right:14px; transform: rotate(90deg); }
+  .turn-zone.prev::after{ bottom:14px; left:14px; transform: rotate(-90deg); }
+  .turn-zone.prev-top::after{ top:14px; left:14px; transform: rotate(180deg); }
+  .turn-zone:hover::after{ opacity:0.7; }
+
+  /* ---------- FULL PAGE-EDGE TURN ZONES ---------- */
+  .page-side-zone{
+    position:absolute;
+    top:0;
+    bottom:0;
+    width:118px;
+    z-index:340;
+    padding:0;
+    border:0;
+    background:transparent;
+    cursor:pointer;
+  }
+  .page-side-zone.prev-side{ left:0; }
+  .page-side-zone.next-side{ right:0; }
+  .page-side-zone::after{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    font-family:var(--font-hand);
+    font-size:36px;
+    color:rgba(89,1,10,0.55);
+    opacity:0;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .page-side-zone.prev-side::after{ content:'‹'; left:14px; }
+  .page-side-zone.next-side::after{ content:'›'; right:14px; }
+  .page-side-zone:hover::after,
+  .page-side-zone:focus-visible::after{ opacity:1; }
+  .page-side-zone.prev-side:hover::after{ transform:translate(-4px,-50%); }
+  .page-side-zone.next-side:hover::after{ transform:translate(4px,-50%); }
+  .page-side-zone:focus-visible{
+    outline:2px dashed rgba(89,1,10,0.55);
+    outline-offset:-8px;
+  }
+  .page-side-zone.prev-side:hover::after{ left:22px; }
+  .page-side-zone.next-side:hover::after{ right:22px; }
+
+  .chrome button,
+  .site-nav a,
+  .turn-zone,
+  .page-side-zone{
+    cursor:pointer;
+  }
+  /* ---------- PAGE THEMES (per-spread accent) ---------- */
+  .theme-about{ background-color: var(--paper); }
+  .theme-uiux{ background-color: var(--paper);
+    background-image:
+      linear-gradient(rgba(43,38,32,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(43,38,32,0.05) 1px, transparent 1px),
+      radial-gradient(rgba(90,70,40,0.03) 1px, transparent 1px);
+    background-size: 22px 22px, 22px 22px, 3px 3px;
+  }
+  .theme-frontend{ background-color: #FBF6E4;
+    background-image:
+      linear-gradient(rgba(95,129,163,0.14) 1px, transparent 1px),
+      radial-gradient(rgba(90,70,40,0.02) 1px, transparent 1px);
+    background-size: 100% 26px, 3px 3px;
+  }
+  .theme-swe{ background-color: #EFE6CC;
+    background-image:
+      radial-gradient(rgba(90,70,40,0.05) 1px, transparent 1px);
+    background-size: 5px 5px;
+  }
+  .theme-houdini{ background-color: #1E2429; color: #E7E3D8;
+    background-image:
+      linear-gradient(rgba(231,227,216,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(231,227,216,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .theme-resume{ background-color: var(--paper-2); }
+  .theme-contact{ background-color: #C9A876; color: #fff; }
+
+  /* Keep every leaf in the notebook on the same warm beige stock. */
+  .board,
+  .flip-leaf .face,
+  .theme-about,
+  .theme-uiux,
+  .theme-frontend,
+  .theme-swe,
+  .theme-houdini,
+  .theme-resume,
+  .theme-contact{
+    background-color: var(--paper) !important;
+    background-image:
+      radial-gradient(rgba(90,70,40,0.03) 1px, transparent 1px),
+      radial-gradient(rgba(90,70,40,0.02) 1px, transparent 1px) !important;
+    background-size: 3px 3px, 7px 7px !important;
+    color: var(--ink) !important;
+  }
+  .theme-houdini .eyebrow,
+  .theme-contact .eyebrow{ color: var(--ink-soft) !important; }
+  .theme-houdini .eyebrow::after,
+  .theme-contact .eyebrow::after{
+    background: linear-gradient(to right, rgba(43,38,32,0.25), transparent) !important;
+  }
+  .theme-houdini .page-title,
+  .theme-contact .page-title{ color: var(--burgundy) !important; }
+  .theme-houdini .subhead,
+  .theme-contact .subhead,
+  .theme-houdini .handwritten,
+  .theme-contact .handwritten{ color: var(--ink) !important; }
+  .theme-houdini .body-text,
+  .theme-contact .body-text{ color: var(--ink-soft) !important; }
+
+  /* ---------- PAGE ELEMENTS ---------- */
+  .eyebrow{
+    font-family: var(--font-tab); font-size: 12px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 8px 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::after{
+    content:''; flex:1; height:1px;
+    background: linear-gradient(to right, rgba(43,38,32,0.25), transparent);
+  }
+  .theme-houdini .eyebrow{ color:#9FB0B8; }
+  .theme-houdini .eyebrow::after{ background: linear-gradient(to right, rgba(231,227,216,0.25), transparent); }
+  .theme-contact .eyebrow{ color: rgba(255,255,255,0.8); }
+
+  .page-title{
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(32px, 4.4vw, 54px);
+    line-height: 0.95;
+    margin: 0 0 14px 0;
+    color: var(--burgundy);
+    letter-spacing: -0.5px;
+  }
+  .theme-houdini .page-title{ color: #E7E3D8; }
+  .theme-contact .page-title{ color: #fff; }
+
+  .subhead{
+    font-family: var(--font-hand-2);
+    font-size: clamp(18px, 1.8vw, 22px);
+    color: var(--ink);
+    margin: 0 0 10px 0;
+  }
+  .theme-houdini .subhead{ color: #E7E3D8; }
+  .theme-contact .subhead{ color: #fff; }
+
+  .body-text{
+    font-family: var(--font-body);
+    font-size: clamp(15px, 1vw, 16.5px);
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .theme-houdini .body-text{ color: #C7CBC6; }
+  .theme-contact .body-text{ color: rgba(255,255,255,0.92); }
+
+  .handwritten{
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .theme-houdini .handwritten{ color: #E7E3D8; }
+
+  /* polaroid photo placeholder */
+  .polaroid{
+    background: #fff;
+    padding: 8px 8px 26px 8px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.28), 0 2px 4px rgba(0,0,0,0.15);
+    display: inline-block;
+    transform: rotate(-3deg);
+    position: relative;
+  }
+  .polaroid-img{
+    width: 100%; height: 100%;
+    background:
+      linear-gradient(135deg, rgba(0,0,0,0.15), transparent 40%),
+      repeating-linear-gradient(45deg,
+        #d4c8ab 0px, #d4c8ab 6px,
+        #c9bc9c 6px, #c9bc9c 12px);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-hand);
+    color: #7a6d52; font-size: 13px;
+    text-align: center;
+  }
+  .polaroid-caption{
+    position: absolute;
+    bottom: 4px; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: #6a5f4a;
+  }
+
+  /* washi tape strip */
+  .tape{
+    position: absolute;
+    background:
+      repeating-linear-gradient(-45deg,
+        rgba(255,255,255,0.45) 0px, rgba(255,255,255,0.45) 4px,
+        rgba(255,255,255,0.15) 4px, rgba(255,255,255,0.15) 10px),
+      var(--tape-color, rgba(214,162,60,0.85));
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    height: 20px;
+  }
+
+  /* sticky/label stickers */
+  .sticker{
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-tab);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    color: #fff;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.18);
+    letter-spacing: 0.5px;
+  }
+  .sticker.blue{ background: var(--dusty-blue); }
+  .sticker.green{ background: var(--sage); }
+  .sticker.mustard{ background: var(--mustard); color: #2b2620; }
+  .sticker.dark{ background: #4b4f52; }
+  .sticker.burgundy{ background: var(--burgundy); }
+  .sticker.terracotta{ background: var(--terracotta); }
+
+  /* photo placeholder */
+  .photo{
+    background:
+      linear-gradient(135deg, rgba(0,0,0,0.12), transparent 40%),
+      repeating-linear-gradient(45deg,
+        #d4c8ab 0px, #d4c8ab 8px,
+        #c9bc9c 8px, #c9bc9c 16px);
+    border: 8px solid #fff;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.22);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-hand);
+    color: #7a6d52; font-size: 13px;
+    text-align: center;
+    padding: 6px;
+  }
+
+  /* video frame placeholder */
+  .video-frame{
+    background: linear-gradient(135deg, #14181B, #292F33);
+    border: 1px solid #3C4448;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    color: #8FA3AB; font-family: var(--font-mono); font-size: 10.5px;
+    padding: 12px;
+    position: relative;
+  }
+  .video-frame::before{
+    content:'';
+    position: absolute; top:6px; left:6px;
+    width: 6px; height:6px; border-radius: 50%;
+    background: #b83d3d; box-shadow: 0 0 4px #b83d3d;
+  }
+  .video-frame .play-btn{
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid #8FA3AB;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+
+  /* code chip */
+  .code-chip{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: #1C1F1A;
+    color: #C9E0A1;
+    padding: 10px 12px;
+    border-radius: 4px;
+    line-height: 1.6;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  .code-chip .kw{ color: #E8B96E; }
+  .code-chip .fn{ color: #85B8F0; }
+  .code-chip .str{ color: #D9A8C5; }
+  .code-chip .cm{ color: #6A7B5A; }
+
+  /* paperclip decoration */
+  .paperclip{
+    position: absolute;
+    width: 14px; height: 44px;
+    border: 2.5px solid #9CA3AB;
+    border-radius: 8px 8px 3px 3px;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+    z-index: 3;
+  }
+  .paperclip::before{
+    content:'';
+    position: absolute;
+    top: 5px; left: 2px; right: 4px;
+    height: 30px;
+    border: 2.5px solid #B6BEC5;
+    border-radius: 6px 6px 3px 3px;
+  }
+
+  /* pin */
+  .pin{
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff8a8a 0%, var(--burgundy) 70%, #6a1f1f 100%);
+    box-shadow: 0 3px 4px rgba(0,0,0,0.4), inset -1px -1px 2px rgba(0,0,0,0.3);
+    z-index: 4;
+  }
+
+  /* handwritten signature squiggle */
+  .signature{
+    font-family: var(--font-hand);
+    font-size: 26px;
+    color: var(--burgundy);
+    line-height: 1;
+    transform: rotate(-4deg);
+    display: inline-block;
+  }
+
+  /* discipline row */
+  .discipline-row{
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(43,38,32,0.15);
+  }
+  .discipline-row:last-child{ border-bottom: none; }
+  .discipline-num{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    padding-top: 4px;
+    flex-shrink: 0; width: 28px;
+  }
+  .discipline-body{ flex: 1; }
+  .discipline-title{
+    font-family: var(--font-hand-2);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .discipline-sub{
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  /* flip hint arrow */
+  .flip-hint{
+    position: absolute;
+    bottom: 26px;
+    right: 40px;
+    font-family: var(--font-hand);
+    color: var(--ink-soft);
+    font-size: 18px;
+    display: flex; align-items: center; gap: 6px;
+    opacity: 0.7;
+  }
+
+  /* resume timeline */
+  .timeline-item{
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(43,38,32,0.15);
+  }
+  .timeline-item:last-child{ border-bottom: none; }
+  .timeline-role{
+    font-family: var(--font-hand-2);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .timeline-where{
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between; margin-top: 2px;
+  }
+
+  /* download button */
+  .btn-download{
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-tab);
+    font-size: 15px;
+    background: var(--burgundy);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 3px;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    margin-top: 12px;
+    width: fit-content;
+    transition: transform .18s ease;
+  }
+  .btn-download:hover{ transform: translateY(-2px); }
+
+  /* ---------- CHROME (progress / prev-next) ---------- */
+  .chrome{
+    position:absolute;
+    left:50%; bottom: 16px;
+    transform: translateX(-50%);
+    display:flex; align-items:center; gap: 20px;
+    font-family: var(--font-tab);
+    color: rgba(237,231,216,0.75);
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .chrome button{
+    font-family: var(--font-tab); font-size: 14px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(237,231,216,0.9);
+    border: 1px solid rgba(237,231,216,0.2);
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background .2s ease;
+  }
+  .chrome button:hover{ background: rgba(255,255,255,0.14); }
+  .chrome button:disabled{ opacity: 0.3; cursor: default; }
+
+  /* ---------- MOBILE ---------- */
+  @media (max-width: 780px){
+    .site-header{ padding: 16px 18px; }
+    .site-nav{ gap: 14px; }
+    .site-nav a{ font-size: 10.5px; letter-spacing: 1.4px; }
+    .flip-leaf{
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+    .chrome{ bottom: 12px; }
+    .turn-zone{ width: 70px; height: 70px; }
+  }
+
+  /* reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .flip-leaf{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <button type="button" class="site-brand" id="brandHome" aria-label="Return to the About page">Hari Priya Tumuluri</button>
+  <nav class="site-nav">
+    <a data-target="0" class="active">About</a>
+    <a data-target="1">Work</a>
+    <a data-target="5">Resume</a>
+    <a data-target="6">Contact</a>
+  </nav>
+</header>
+
+<div class="stage">
+  <div class="craft-workspace">
+    <img class="craft-item craft-ribbon" src="images/coralribbon.png" alt="">
+    <img class="craft-item craft-glue-stick" src="images/glue stick.png" alt="">
+    <img class="craft-item craft-glue" src="images/glue.png" alt="">
+    <img class="craft-item craft-scissors" src="images/scissors.png" alt="">
+    <img class="craft-item craft-tape" src="images/tape.png" alt="">
+
+    <div class="book-shell">
+    <div class="book-pages" id="bookPages">
+      <div class="board board-left" id="boardLeft"></div>
+      <div class="board board-right" id="boardRight"></div>
+
+      <!-- animating leaf -->
+      <div class="flip-leaf" id="flipLeaf">
+        <div class="face front" id="leafFront"></div>
+        <div class="face back" id="leafBack"></div>
+      </div>
+
+      <!-- ring binder spine -->
+      <div class="spine">
+        <div class="cap top"></div>
+        <div class="ring r1"></div>
+        <div class="ring r2"></div>
+        <div class="ring r3"></div>
+        <div class="ring r4"></div>
+        <div class="ring r5"></div>
+        <div class="ring r6"></div>
+        <div class="rod"></div>
+        <div class="cap bot"></div>
+      </div>
+
+      <!-- corner turn-zones (all 4 corners) -->
+      <div class="turn-zone next" data-dir="next"></div>
+      <div class="turn-zone prev" data-dir="prev"></div>
+      <div class="turn-zone next-top" data-dir="next"></div>
+      <div class="turn-zone prev-top" data-dir="prev"></div>
+
+      <!-- click either outer page edge to turn one spread -->
+      <button type="button" class="page-side-zone prev-side" data-dir="prev" aria-label="Turn to the previous spread"></button>
+      <button type="button" class="page-side-zone next-side" data-dir="next" aria-label="Turn to the next spread"></button>
+    </div>
+
+    </div>
+  </div>
+
+  <div class="chrome">
+    <button id="btnPrev">‹ back</button>
+    <span id="progress">about — 1/7</span>
+    <button id="btnNext">next ›</button>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  //  SPREAD CONTENT
+  //  Each spread has: theme, left html, right html
+  // ============================================================
+  const spreads = [
+    // 0 — ABOUT (landing spread)
+    {
+      theme: 'about',
+      key: 'about',
+      label: 'about',
+      left: `
+        <div class="tape" style="width:110px; top:24px; left:32px; transform:rotate(-6deg); --tape-color: rgba(214,162,60,0.75);"></div>
+        <div class="tape" style="width:110px; top:24px; right:52px; transform:rotate(4deg); --tape-color: rgba(196,106,70,0.65);"></div>
+        <div class="eyebrow">about</div>
+        <h1 class="page-title">hi, i'm<br>Hari Priya ✿</h1>
+        <p class="body-text" style="margin-top:6px; max-width: 92%;">
+          i'm a Rutgers student combining computer science, information technology,
+          design, and visual effects. this scrapbook holds the work i'm building at
+          the intersection of creative ideas and technical systems.
+        </p>
+        <div style="display:flex; align-items:flex-start; gap:22px; margin-top: 22px;">
+          <div class="polaroid" style="width: 150px; flex-shrink:0;">
+            <div class="polaroid-img" style="height: 170px;">add portrait.jpg</div>
+            <div class="polaroid-caption">— hi that's me</div>
+          </div>
+          <div style="padding-top: 14px;">
+            <div class="handwritten" style="transform: rotate(-2deg);">
+              currently:<br>
+              <span style="color: var(--burgundy);">building creative-tech<br>projects + seeking internships ↓</span>
+            </div>
+          </div>
+        </div>
+        <div class="signature" style="margin-top: auto; align-self: flex-start;">— Hari Priya</div>
+        <div class="pin" style="top: 18px; right: 20px;"></div>
+      `,
+      right: `
+        <div class="eyebrow">what i do</div>
+        <h2 class="page-title" style="font-size: clamp(26px,3.2vw,38px);">a little bit of<br>everything</h2>
+
+        <div style="margin-top: 16px;">
+          <div class="discipline-row">
+            <div class="discipline-num">01</div>
+            <div class="discipline-body">
+              <div class="discipline-title">UI / UX Design</div>
+              <div class="discipline-sub">research-led interfaces and prototypes</div>
+            </div>
+            <span class="sticker blue">figma</span>
+          </div>
+          <div class="discipline-row">
+            <div class="discipline-num">02</div>
+            <div class="discipline-body">
+              <div class="discipline-title">Frontend Development</div>
+              <div class="discipline-sub">accessible experiences built for the web</div>
+            </div>
+            <span class="sticker green">react</span>
+          </div>
+          <div class="discipline-row">
+            <div class="discipline-num">03</div>
+            <div class="discipline-body">
+              <div class="discipline-title">Software Engineering</div>
+              <div class="discipline-sub">Python, Java, databases, and applied AI</div>
+            </div>
+            <span class="sticker mustard">python</span>
+          </div>
+          <div class="discipline-row">
+            <div class="discipline-num">04</div>
+            <div class="discipline-body">
+              <div class="discipline-title">Houdini · VFX</div>
+              <div class="discipline-sub">crowd simulation and procedural workflows</div>
+            </div>
+            <span class="sticker dark">houdini</span>
+          </div>
+        </div>
+
+        <div class="flip-hint">turn the page →</div>
+      `
+    },
+
+    // 1 — UI/UX
+    {
+      theme: 'uiux',
+      key: 'work',
+      label: 'work — ui/ux',
+      left: `
+        <div class="eyebrow">selected work — 01</div>
+        <h1 class="page-title">ui / ux<br>design</h1>
+        <p class="body-text" style="margin-top: 6px; max-width: 90%;">
+          <strong style="color:var(--ink);">Cognify</strong> is a browser accessibility tool
+          designed for people with dyslexia, ADHD, and ESL needs. I led the UI/UX work,
+          shaping a clear interface around a broad set of reading and focus tools.
+        </p>
+        <div class="photo" style="width: 100%; height: 210px; margin-top: 18px;">add Cognify interface screenshot</div>
+        <div style="margin-top: 12px; display:flex; gap: 6px; flex-wrap: wrap;">
+          <span class="sticker blue">figma</span>
+          <span class="sticker mustard">user research</span>
+          <span class="sticker green">prototyping</span>
+        </div>
+      `,
+      right: `
+        <div class="eyebrow">process</div>
+        <h2 class="subhead">from idea → award-winning prototype</h2>
+        <div style="display:flex; gap: 14px; margin-top: 10px;">
+          <div class="photo" style="width: 48%; height: 120px; transform: rotate(-2deg);">add early prototype</div>
+          <div class="photo" style="width: 48%; height: 120px; transform: rotate(2deg);">add final interface</div>
+        </div>
+        <p class="body-text" style="margin-top: 16px;">
+          <strong style="color: var(--ink);">Role:</strong> UI/UX lead + frontend contributor<br>
+          <strong style="color: var(--ink);">Built:</strong> 3 interactive Figma prototypes<br>
+          <strong style="color: var(--ink);">Features:</strong> spacing, filters, Pomodoro,
+          text-to-speech, AI summaries, and translation
+        </p>
+        <div class="handwritten" style="margin-top: auto; color: var(--burgundy); transform: rotate(-2deg);">
+          → MLH “Best Failure to Launch” at HackRU
+        </div>
+        <div class="paperclip" style="top: 20px; right: 40px;"></div>
+      `
+    },
+
+    // 2 — FRONTEND
+    {
+      theme: 'frontend',
+      key: 'work',
+      label: 'work — frontend',
+      left: `
+        <div class="eyebrow">selected work — 02</div>
+        <h1 class="page-title">design<br>fellowship</h1>
+        <p class="body-text" style="margin-top: 6px; max-width: 90%;">
+          During the Creative Labs Fellowship, I worked on a 10-week team product
+          from early research through a polished prototype and shared design system.
+        </p>
+        <div class="photo" style="width: 100%; height: 200px; margin-top: 18px;">add final fellowship mockup</div>
+        <div style="margin-top: 12px; display:flex; gap: 6px; flex-wrap: wrap;">
+          <span class="sticker green">prototyping</span>
+          <span class="sticker mustard">user research</span>
+          <span class="sticker terracotta">design systems</span>
+        </div>
+      `,
+      right: `
+        <div class="eyebrow">my process</div>
+        <h2 class="subhead">research → structure → prototype</h2>
+        <div class="code-chip" style="margin-top: 10px;">
+          01 &nbsp; interviews + think-aloud testing<br>
+          02 &nbsp; personas + user flows<br>
+          03 &nbsp; wireframes + design system<br>
+          04 &nbsp; interactive prototype + iteration
+        </div>
+        <p class="body-text" style="margin-top: 14px;">
+          I learned how to turn messy feedback into focused design decisions,
+          document reusable components, and communicate rationale to collaborators.
+        </p>
+        <div class="handwritten" style="margin-top: auto; transform: rotate(-1.5deg); color: var(--sage);">
+          team size → 5 collaborators
+        </div>
+      `
+    },
+
+    // 3 — SWE
+    {
+      theme: 'swe',
+      key: 'work',
+      label: 'work — swe',
+      left: `
+        <div class="eyebrow">selected work — 03</div>
+        <h1 class="page-title">engineering<br>+ applied AI</h1>
+        <p class="body-text" style="margin-top: 6px; max-width: 90%;">
+          Through CodePath and the Blueprint Backend Fellowship, I have been building
+          practical foundations in APIs, databases, backend systems, and AI-powered products.
+        </p>
+        <div class="photo" style="width: 100%; height: 170px; margin-top: 18px;">add project architecture or demo</div>
+        <div style="margin-top: 12px; display:flex; gap: 6px; flex-wrap: wrap;">
+          <span class="sticker mustard">python</span>
+          <span class="sticker dark">sql</span>
+          <span class="sticker terracotta">generative AI</span>
+        </div>
+      `,
+      right: `
+        <div class="eyebrow">approach</div>
+        <h2 class="subhead">problem → approach → result</h2>
+        <div class="body-text" style="margin-top: 12px; line-height: 1.85;">
+          <strong style="color: var(--ink); font-family: var(--font-hand-2); font-size: 15px;">The problem</strong><br>
+          Build software that connects a usable interface to reliable application logic.<br><br>
+
+          <strong style="color: var(--ink); font-family: var(--font-hand-2); font-size: 15px;">The approach</strong><br>
+          Practice through Flask/SQLite projects, API integration, classification,
+          prompt design, and model evaluation.<br><br>
+
+          <strong style="color: var(--ink); font-family: var(--font-hand-2); font-size: 15px;">The result</strong><br>
+          A growing toolkit across Java, Python, web development, SQL, and applied AI.
+        </div>
+        <div class="handwritten" style="margin-top: auto; color: var(--burgundy); transform: rotate(-2deg);">
+          current focus → full-stack projects with thoughtful UX
+        </div>
+      `
+    },
+
+    // 4 — HOUDINI
+    {
+      theme: 'houdini',
+      key: 'work',
+      label: 'work — houdini',
+      left: `
+        <div class="eyebrow">selected work — 04</div>
+        <h1 class="page-title">houdini<br>· vfx</h1>
+        <p class="body-text" style="margin-top: 6px; max-width: 90%;">
+          I am learning Houdini through crowd simulations and procedural workflows,
+          connecting my programming background with my goal of working in VFX and animation technology.
+        </p>
+        <div class="video-frame" style="width: 100%; height: 230px; margin-top: 18px;">
+          <div class="play-btn">▶</div>
+          add crowd simulation playblast
+        </div>
+        <div style="margin-top: 12px; display:flex; gap: 6px; flex-wrap: wrap;">
+          <span class="sticker dark">houdini</span>
+          <span class="sticker terracotta">crowds</span>
+          <span class="sticker mustard">procedural VFX</span>
+        </div>
+      `,
+      right: `
+        <div class="eyebrow">breakdown</div>
+        <h2 class="subhead">crowd system breakdown</h2>
+        <div class="video-frame" style="width: 100%; height: 180px; margin-top: 10px;">
+          <div class="play-btn">▶</div>
+          add node graph or terrain test
+        </div>
+        <p class="body-text" style="margin-top: 14px;">
+          <strong style="color: var(--ink);">Techniques:</strong> crowd sourcing, states,
+          terrain projection, and agent behavior<br>
+          <strong style="color: var(--ink);">Program:</strong> Academy Software Foundation Summer Learning Program<br>
+          <strong style="color: var(--ink);">Goal:</strong> creative technology and Pipeline TD work
+        </p>
+      `
+    },
+
+    // 5 — RESUME
+    {
+      theme: 'resume',
+      key: 'resume',
+      label: 'resume',
+      left: `
+        <div class="eyebrow">resume — the paper trail</div>
+        <h1 class="page-title">experience</h1>
+
+        <div style="margin-top: 12px;">
+          <div class="timeline-item">
+            <div class="timeline-role">CodePath Applied AI Participant</div>
+            <div class="timeline-where">
+              <span>CodePath</span>
+              <span>Summer 2026</span>
+            </div>
+            <p class="body-text" style="margin-top: 6px; font-size: 12.5px;">
+              Built skills in prompt engineering, model evaluation, APIs, and applied generative AI.
+            </p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-role">Summer Learning Program Mentee</div>
+            <div class="timeline-where">
+              <span>Academy Software Foundation</span>
+              <span>Jun–Jul 2026</span>
+            </div>
+            <p class="body-text" style="margin-top: 6px; font-size: 12.5px;">
+              Selected for a 20-person cohort focused on open-source software and VFX careers.
+            </p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-role">Backend Software Engineering Fellow</div>
+            <div class="timeline-where">
+              <span>Blueprint</span>
+              <span>Feb–May 2026</span>
+            </div>
+            <p class="body-text" style="margin-top: 6px; font-size: 12.5px;">
+              Practiced Python, SQL, APIs, databases, and backend application development.
+            </p>
+          </div>
+        </div>
+        <div class="paperclip" style="top: 26px; right: 28px;"></div>
+      `,
+      right: `
+        <div class="eyebrow">education & skills</div>
+        <h2 class="subhead">education</h2>
+        <div class="timeline-item">
+          <div class="timeline-role">Computer Science + Information Technology & Informatics</div>
+          <div class="timeline-where">
+            <span>Rutgers University–New Brunswick</span>
+            <span>Expected 2028</span>
+          </div>
+        </div>
+
+        <h2 class="subhead" style="margin-top: 20px;">skills</h2>
+        <div style="display:flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+          <span class="sticker blue">Figma</span>
+          <span class="sticker green">HTML / CSS</span>
+          <span class="sticker mustard">Python</span>
+          <span class="sticker dark">Java</span>
+          <span class="sticker terracotta">SQL</span>
+          <span class="sticker burgundy">Generative AI</span>
+        </div>
+
+        <h2 class="subhead" style="margin-top: 20px;">tools i live in</h2>
+        <p class="body-text">Figma · VS Code · Houdini · Maya · Git/GitHub · Adobe Creative Cloud</p>
+
+        <p class="body-text" style="margin-top:18px;"><strong style="color:var(--ink);">Also:</strong> Dining Services student worker · WiCS member · HackHERS volunteer · Creative Labs</p>
+      `
+    },
+
+    // 6 — CONTACT
+    {
+      theme: 'contact',
+      key: 'contact',
+      label: 'contact',
+      left: `
+        <div class="eyebrow">contact</div>
+        <h1 class="page-title" style="color:#fff;">say hi ✿</h1>
+        <p class="body-text" style="margin-top: 6px;">
+          thanks for flipping through. i'm always happy to talk about design,
+          software, VFX, or projects that combine all three. easiest way to reach me:
+        </p>
+
+        <div style="margin-top: 24px;">
+          <div class="handwritten" style="font-size: 28px; color: #fff;">
+            <a href="mailto:ht422@scarletmail.rutgers.edu" style="color:var(--burgundy);">ht422@scarletmail.rutgers.edu</a>
+          </div>
+          <div class="body-text" style="margin-top: 12px;">
+            Add your LinkedIn and GitHub URLs here before publishing.
+          </div>
+        </div>
+
+        <div class="handwritten" style="margin-top: auto; color: rgba(255,255,255,0.85); transform: rotate(-2deg);">
+          based in New Jersey<br>
+          open to internships and creative-tech opportunities
+        </div>
+      `,
+      right: `
+        <div class="eyebrow" style="color:rgba(255,255,255,0.7);">back cover</div>
+        <h2 class="page-title" style="color: #fff;">the end.</h2>
+        <p class="body-text">
+          this portfolio is built as an interactive HTML scrapbook.
+          it will keep growing as I finish new design, software, and VFX projects.
+        </p>
+
+        <div class="tape" style="width: 120px; top: 40%; right: 20%; transform: rotate(-12deg); --tape-color: rgba(255,255,255,0.4);"></div>
+
+        <div style="margin-top: auto; text-align: right;">
+          <div class="signature" style="font-size: 34px;">— Hari Priya</div>
+          <div class="body-text" style="margin-top: 6px; opacity: 0.7;">© 2026</div>
+        </div>
+      `
+    }
+  ];
+
+  // ============================================================
+  //  DOM refs
+  // ============================================================
+  const stage      = document.querySelector('.stage');
+  const boardLeft  = document.getElementById('boardLeft');
+  const boardRight = document.getElementById('boardRight');
+  const flipLeaf   = document.getElementById('flipLeaf');
+  const leafFront  = document.getElementById('leafFront');
+  const leafBack   = document.getElementById('leafBack');
+  const btnPrev    = document.getElementById('btnPrev');
+  const btnNext    = document.getElementById('btnNext');
+  const progressEl = document.getElementById('progress');
+  const navLinks   = document.querySelectorAll('.site-nav a');
+  const brandHome  = document.getElementById('brandHome');
+
+  const TOTAL = spreads.length;
+  let currentSpread = 0;
+  let isFlipping = false;
+
+  // Scale the complete object as one unit so its internal layout never reflows.
+  function fitBookToViewport(){
+    const horizontalRoom = Math.max(0, window.innerWidth - 48);
+    const verticalRoom = Math.max(0, window.innerHeight - 132);
+    const scale = 0.88 * Math.min(
+      1,
+      horizontalRoom / 1448,
+      verticalRoom / 825
+    );
+
+    document.documentElement.style.setProperty(
+      '--book-scale',
+      Math.max(0, scale).toFixed(4)
+    );
+  }
+
+  // Drag the notebook as one unit while leaving its page and tab controls usable.
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let workspaceOffsetX = 0;
+  let workspaceOffsetY = 0;
+
+  function setWorkspaceOffset(nextX, nextY){
+    const workspace = document.querySelector('.craft-workspace');
+    const maxX = Math.max(0, (workspace.offsetWidth - stage.clientWidth) / 2);
+    const maxY = Math.max(0, (workspace.offsetHeight - stage.clientHeight) / 2);
+    workspaceOffsetX = Math.min(maxX, Math.max(-maxX, nextX));
+    workspaceOffsetY = Math.min(maxY, Math.max(-maxY, nextY));
+    document.documentElement.style.setProperty('--workspace-x', `${workspaceOffsetX}px`);
+    document.documentElement.style.setProperty('--workspace-y', `${workspaceOffsetY}px`);
+  }
+
+  function isInteractiveTarget(target){
+    return target.closest('button, a, input, textarea, select, video');
+  }
+
+  stage.addEventListener('pointerdown', event => {
+    if (event.button !== 0 || isInteractiveTarget(event.target)) return;
+
+    isDragging = true;
+    dragStartX = event.clientX - workspaceOffsetX;
+    dragStartY = event.clientY - workspaceOffsetY;
+    stage.classList.add('is-dragging');
+    stage.setPointerCapture(event.pointerId);
+  });
+
+  stage.addEventListener('pointermove', event => {
+    if (!isDragging) return;
+
+    setWorkspaceOffset(event.clientX - dragStartX, event.clientY - dragStartY);
+  });
+
+  function stopDragging(event){
+    if (!isDragging) return;
+
+    isDragging = false;
+    stage.classList.remove('is-dragging');
+    if (stage.hasPointerCapture(event.pointerId)) {
+      stage.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  stage.addEventListener('pointerup', stopDragging);
+  stage.addEventListener('pointercancel', stopDragging);
+
+  // ============================================================
+  //  Render helpers
+  // ============================================================
+  function applyBoard(el, side, i){
+    el.className = `board board-${side} theme-${spreads[i].theme}`;
+    el.innerHTML = spreads[i][side];
+  }
+  function applyFace(el, face, side, i){
+    el.className = `face ${face} theme-${spreads[i].theme}`;
+    el.innerHTML = spreads[i][side];
+  }
+  function updateNav(){
+    const s = spreads[currentSpread];
+    progressEl.textContent = `${s.label} — ${currentSpread + 1}/${TOTAL}`;
+    btnPrev.disabled = currentSpread === 0;
+    btnNext.disabled = currentSpread === TOTAL - 1;
+    navLinks.forEach(a => {
+      const t = parseInt(a.dataset.target, 10);
+      // highlight the nav item whose key group we're in
+      const linkKey = spreads[t] ? spreads[t].key : null;
+      a.classList.toggle('active', s.key === linkKey);
+    });
+  }
+
+  function returnHome(){
+    if (isFlipping) return;
+    currentSpread = 0;
+    setWorkspaceOffset(0, 0);
+    applyBoard(boardLeft, 'left', currentSpread);
+    applyBoard(boardRight, 'right', currentSpread);
+    updateNav();
+  }
+
+  // ============================================================
+  //  Flip animation (single animating leaf; no ghost pages)
+  // ============================================================
+  function flipTo(target){
+    if (isFlipping) return;
+    if (target === currentSpread) return;
+    if (target < 0 || target >= TOTAL) return;
+
+    isFlipping = true;
+    const src = currentSpread;
+    const forward = target > src;
+
+    // Configure the animating leaf so its two faces show:
+    //   - what's leaving (visible now)
+    //   - what's arriving (visible when flip finishes)
+    if (forward) {
+      applyFace(leafFront, 'front', 'right', src);     // right page leaving
+      applyFace(leafBack,  'back',  'left',  target);  // left page arriving
+
+      // Board that will be REVEALED at end (right side) — set now, hidden by leaf.front
+      applyBoard(boardRight, 'right', target);
+    } else {
+      applyFace(leafFront, 'front', 'right', target);  // right page arriving
+      applyFace(leafBack,  'back',  'left',  src);     // left page leaving
+
+      // Board that will be REVEALED at end (left side) — set now, hidden by leaf.back
+      applyBoard(boardLeft, 'left', target);
+    }
+
+    const startRot = forward ? 0 : -180;
+    const endRot   = forward ? -180 : 0;
+
+    flipLeaf.style.transform = `rotateY(${startRot}deg)`;
+    flipLeaf.style.display = 'block';
+    flipLeaf.classList.add('is-flipping');
+
+    // wait a frame so the initial transform paints
+    requestAnimationFrame(() => {
+      const anim = flipLeaf.animate(
+        [
+          { transform: `rotateY(${startRot}deg)` },
+          { transform: `rotateY(${endRot}deg)` }
+        ],
+        { duration: 900, easing: 'cubic-bezier(0.55, 0.05, 0.25, 1)', fill: 'forwards' }
+      );
+
+      anim.onfinish = () => {
+        // Update the OTHER board (currently hidden under the leaf's landing face)
+        if (forward) {
+          applyBoard(boardLeft, 'left', target);
+        } else {
+          applyBoard(boardRight, 'right', target);
+        }
+
+        // one frame later, hide the leaf so exposed boards take over cleanly
+        requestAnimationFrame(() => {
+          flipLeaf.style.display = 'none';
+          flipLeaf.classList.remove('is-flipping');
+          currentSpread = target;
+          updateNav();
+          isFlipping = false;
+        });
+      };
+    });
+  }
+
+  // ============================================================
+  //  Event wiring
+  // ============================================================
+  document.querySelectorAll('.turn-zone, .page-side-zone').forEach(z => {
+    z.addEventListener('click', () => {
+      if (z.dataset.dir === 'next') flipTo(currentSpread + 1);
+      else flipTo(currentSpread - 1);
+    });
+  });
+  btnNext.addEventListener('click', () => flipTo(currentSpread + 1));
+  btnPrev.addEventListener('click', () => flipTo(currentSpread - 1));
+  brandHome.addEventListener('click', returnHome);
+
+  navLinks.forEach(a => {
+    a.addEventListener('click', () => {
+      flipTo(parseInt(a.dataset.target, 10));
+    });
+  });
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') flipTo(currentSpread + 1);
+    if (e.key === 'ArrowLeft')  flipTo(currentSpread - 1);
+  });
+  window.addEventListener('resize', () => {
+    fitBookToViewport();
+    setWorkspaceOffset(workspaceOffsetX, workspaceOffsetY);
+  }, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      fitBookToViewport();
+      setWorkspaceOffset(workspaceOffsetX, workspaceOffsetY);
+    }, { passive: true });
+  }
+
+  // ============================================================
+  //  Init — book opens directly on About
+  // ============================================================
+  fitBookToViewport();
+  applyBoard(boardLeft,  'left',  currentSpread);
+  applyBoard(boardRight, 'right', currentSpread);
+  updateNav();
+</script>
+</body>
+</html>
