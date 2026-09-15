@@ -56,6 +56,9 @@
     color: var(--ink);
     overflow:hidden;
   }
+  html.work-mode, body.work-mode{ height:auto; min-height:100%; overflow-x:hidden; }
+  html.work-mode{ overflow-y:auto; }
+  body.work-mode{ overflow-y:visible; }
 
   /* ---------- TOP-LEVEL NAV ---------- */
   .site-header{
@@ -102,6 +105,19 @@
     cursor:grab;
     touch-action:none;
   }
+  .stage.is-work-document{
+    height:var(--work-stage-height, 1800px);
+    min-height:100vh;
+    overflow:hidden;
+    touch-action:pan-y;
+    /* Perspective creates a containing block for fixed descendants. Disable it
+       here so the cutting mat remains a viewport-fixed camera background. */
+    perspective:none;
+  }
+  .stage.is-work-document .craft-workspace{
+    position:fixed;
+    top:50%;
+  }
   .stage.is-dragging{
     cursor:grabbing;
   }
@@ -140,6 +156,25 @@
   .craft-scissors{ --item-rotation:-9deg; width:270px; right:300px; bottom:220px; transform:rotate(var(--item-rotation)); }
   .craft-tape{ --item-rotation:8deg; width:220px; right:230px; top:545px; transform:rotate(var(--item-rotation)); }
 
+  /* Owns layout/FLIP translation while the shell owns physical rotation. */
+  .book-frame{
+    position:absolute; inset:0;
+    z-index:2;
+    pointer-events:none;
+    transform:translate(var(--workspace-x, 0px), var(--workspace-y, 0px));
+    will-change:transform;
+  }
+  .book-motion{ position:absolute; inset:0; will-change:transform; }
+  .book-frame .book-shell{ pointer-events:auto; }
+  .stage.is-work-document .book-frame{
+    position:relative;
+    inset:auto;
+    width:var(--work-book-width, 760px);
+    height:var(--work-book-height, 1215px);
+    margin:var(--work-top-gap, 82px) auto var(--work-bottom-gap, 90px);
+    transform:none;
+  }
+
   /* ---------- BOOK SHELL (hard cover base) ---------- */
   .book-shell{
     position:absolute;
@@ -147,7 +182,7 @@
     top:50%;
     width:1320px;
     height:825px;
-    transform:translate(-50%, -50%) scale(var(--book-scale, 1));
+    transform:translate(-50%, -50%) scale(var(--book-scale, 1)) rotate(0deg);
     transform-origin:center center;
     z-index:1;
     padding: 22px 22px 34px 22px;
@@ -178,6 +213,180 @@
       inset 0 2px 8px rgba(255,255,255,0.05),
       inset 0 -6px 20px rgba(0,0,0,0.5);
   }
+
+  .book-shell.is-transitioning{ will-change:transform, opacity; }
+  .book-shell.is-work{
+    transform:translate(-50%, -50%) scale(var(--work-scale, .6)) rotate(90deg);
+  }
+  .book-shell.is-work .book-pages{ opacity:0; pointer-events:none; }
+
+  /* ---------- PORTRAIT WORK FILE ---------- */
+  .work-view{
+    position:absolute;
+    left:50%; top:50%;
+    width:780px; height:1260px;
+    padding:130px 54px;
+    border-radius:8px;
+    background:
+      radial-gradient(rgba(88,64,40,.035) 1px, transparent 1px),
+      radial-gradient(rgba(88,64,40,.025) 1px, transparent 1px),
+      var(--paper);
+    background-size:3px 3px, 7px 7px;
+    box-shadow:0 14px 28px rgba(0,0,0,.34), inset 0 0 0 1px rgba(93,68,35,.12);
+    transform:translate(-50%,-50%) rotate(-90deg);
+    transform-origin:center;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    z-index:650;
+    overflow:hidden;
+    transition:opacity 280ms ease;
+  }
+  .work-view.is-visible{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+  }
+  .work-view::before{
+    content:''; position:absolute; inset:13px;
+    border:1px solid rgba(89,1,10,.12); border-radius:3px;
+    pointer-events:none;
+  }
+  .work-divider{
+    position:absolute; z-index:6; left:0; right:0; top:50%; height:22px;
+    transform:translateY(-50%);
+    background:
+      linear-gradient(to bottom, transparent, rgba(58,38,18,.16) 42%, rgba(245,224,177,.78) 47%, rgba(86,55,21,.42) 53%, transparent);
+    box-shadow:0 7px 12px rgba(44,28,14,.09);
+    pointer-events:none;
+  }
+  .work-divider::after{
+    content:''; position:absolute; left:5%; right:5%; top:9px; height:4px;
+    border-radius:50%;
+    background:linear-gradient(90deg, var(--brass-2), var(--brass-5) 45%, var(--brass-2));
+    box-shadow:0 2px 3px rgba(0,0,0,.3);
+  }
+  .work-heading{ position:relative; z-index:20; display:flex; align-items:flex-end; justify-content:space-between; }
+  .work-kicker{ margin:0 0 5px; font:500 12px/1 var(--font-mono); letter-spacing:2px; color:var(--ink-soft); text-transform:uppercase; }
+  .work-title{ margin:0; font:700 44px/.95 var(--font-display); color:var(--burgundy); }
+  .work-note{ max-width:245px; margin:0 0 2px; font:600 18px/1.1 var(--font-hand); color:var(--ink-soft); transform:rotate(-1deg); }
+  .folder-stack{ position:relative; height:900px; margin-top:22px; }
+  .project-folder{
+    --folder:#b88c58; --accent:#7d4f2a; --folder-tilt:0deg;
+    --folder-layer:10; --tab-left:18px;
+    position:absolute; left:12px; right:12px; height:300px;
+    color:var(--ink); text-decoration:none;
+    outline:none;
+  }
+  .project-folder:nth-child(1){ top:0; --folder-layer:10; --folder-tilt:-.6deg; --tab-left:18px; }
+  .project-folder:nth-child(2){ top:195px; --folder-layer:20; --folder-tilt:.45deg; --tab-left:178px; }
+  .project-folder:nth-child(3){ top:390px; --folder-layer:30; --folder-tilt:-.35deg; --tab-left:344px; }
+  .project-folder:nth-child(4){ top:585px; --folder-layer:40; --folder-tilt:.55deg; --tab-left:438px; }
+  .folder-visual{
+    position:absolute; inset:0; z-index:var(--folder-layer);
+    transform:translateY(0) rotate(var(--folder-tilt));
+    transform-origin:center 90%;
+    filter:drop-shadow(0 13px 10px rgba(42,30,20,.2));
+    transition:transform 320ms cubic-bezier(.22,1,.36,1), filter 320ms ease;
+  }
+  .folder-back{
+    position:absolute; inset:24px 0 0; border-radius:8px 8px 4px 4px;
+    background:
+      radial-gradient(rgba(62,43,24,.07) .8px, transparent .8px),
+      color-mix(in srgb, var(--folder) 91%, #fff);
+    background-size:4px 4px;
+    box-shadow:inset 0 1px rgba(255,255,255,.35);
+  }
+  .folder-back::before{
+    content:''; position:absolute; top:-24px; left:var(--tab-left); width:210px; height:42px;
+    border-radius:8px 18px 0 0; background:var(--folder);
+    clip-path:polygon(0 0, 78% 0, 88% 100%, 0 100%);
+  }
+  .project-preview{
+    position:absolute; z-index:2; left:50%; top:38px; width:380px; height:205px;
+    padding:13px 13px 30px; background:#fdfbf4;
+    box-shadow:0 6px 12px rgba(31,24,18,.24);
+    transform:translateX(-50%) translateY(26px) rotate(-.8deg);
+    transition:transform 320ms cubic-bezier(.22,1,.36,1), opacity 220ms ease, box-shadow 320ms ease;
+  }
+  .preview-art{
+    width:100%; height:100%; display:grid; place-items:center; overflow:hidden;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--accent) 86%, #fff), var(--accent));
+    color:rgba(255,255,255,.9); font:600 13px/1.4 var(--font-mono); letter-spacing:1px;
+    text-align:center; text-transform:uppercase;
+  }
+  .preview-art img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .folder-front{
+    position:absolute; z-index:3; left:0; right:0; bottom:0; height:174px;
+    padding:47px 34px 22px;
+    background:
+      linear-gradient(105deg, rgba(255,255,255,.11), transparent 34%),
+      radial-gradient(rgba(64,43,22,.055) .8px, transparent .8px),
+      var(--folder);
+    background-size:auto, 4px 4px, auto;
+    border-radius:5px 5px 4px 4px;
+    box-shadow:inset 0 1px rgba(255,255,255,.35), 0 -3px 8px rgba(48,32,18,.1);
+    clip-path:polygon(0 5%, 48% 0, 100% 4%, 100% 100%, 0 100%);
+  }
+  .folder-tab-label{
+    position:absolute; z-index:calc(100 + var(--folder-layer)); top:0; left:var(--tab-left); width:205px; height:42px;
+    display:flex; align-items:center; padding:0 15px;
+    font:700 25px/1 var(--font-hand); color:color-mix(in srgb, var(--accent) 75%, #271e16);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    background:var(--folder);
+    border-radius:9px 18px 0 0;
+    clip-path:polygon(0 0, 82% 0, 95% 100%, 0 100%);
+    box-shadow:inset 0 1px rgba(255,255,255,.35);
+    transform:translateY(0) rotate(var(--folder-tilt));
+    transform-origin:left bottom;
+    transition:transform 320ms cubic-bezier(.22,1,.36,1), filter 320ms ease;
+  }
+  .folder-meta{ display:flex; justify-content:space-between; align-items:center; gap:20px; border-bottom:1px solid color-mix(in srgb, var(--accent) 30%, transparent); padding-bottom:8px; }
+  .folder-number{ font:500 12px/1 var(--font-mono); letter-spacing:1.4px; color:color-mix(in srgb, var(--accent) 76%, #30261e); }
+  .folder-category{ font:700 13px/1 var(--font-body); letter-spacing:1.2px; text-transform:uppercase; color:color-mix(in srgb, var(--accent) 80%, #30261e); }
+  .folder-description{ display:block; max-width:88%; margin:12px 0 0; font:500 17px/1.35 var(--font-body); color:color-mix(in srgb, var(--accent) 65%, #30261e); }
+  .project-folder:hover,
+  .project-folder:focus-visible,
+  .project-folder.is-peeking{
+    z-index:60;
+  }
+  .project-folder:hover .folder-visual,
+  .project-folder:focus-visible .folder-visual,
+  .project-folder.is-peeking .folder-visual,
+  .project-folder:hover .folder-tab-label,
+  .project-folder:focus-visible .folder-tab-label,
+  .project-folder.is-peeking .folder-tab-label{
+    transform:translateY(-7px) rotate(var(--folder-tilt));
+    filter:drop-shadow(0 18px 15px rgba(42,30,20,.28));
+  }
+  .project-folder:hover .project-preview,
+  .project-folder:focus-visible .project-preview,
+  .project-folder.is-peeking .project-preview{
+    transform:translateX(-50%) translateY(-26px) rotate(1.4deg);
+    box-shadow:0 13px 18px rgba(31,24,18,.3);
+  }
+  .project-folder:focus-visible::after{
+    content:''; position:absolute; inset:-7px; border:3px dashed var(--burgundy); border-radius:10px;
+  }
+  .work-paperclip{
+    position:absolute; z-index:12; top:410px; right:37px; width:19px; height:64px;
+    border:3px solid #85878a; border-radius:11px 11px 5px 5px;
+    transform:rotate(8deg); box-shadow:1px 2px 2px rgba(0,0,0,.16);
+  }
+  .work-back{
+    position:absolute; z-index:130; left:32px; top:35px; border:0; background:transparent;
+    color:var(--burgundy); font:700 17px/1 var(--font-hand); cursor:pointer; padding:8px 12px;
+  }
+  .work-back:hover{ transform:translateX(-3px); }
+  .work-edge-zone{ position:absolute; z-index:120; left:0; right:0; height:9%; border:0; background:transparent; cursor:pointer; }
+  .work-edge-zone.prev{ top:0; }
+  .work-edge-zone.next{ bottom:0; }
+  .work-edge-zone::after{ position:absolute; left:50%; transform:translateX(-50%); font:24px/1 var(--font-hand); color:rgba(89,1,10,.5); opacity:.25; transition:opacity .2s ease, transform .2s ease; }
+  .work-edge-zone.prev::after{ content:'↑ previous page'; top:28px; }
+  .work-edge-zone.next::after{ content:'next page ↓'; bottom:28px; }
+  .work-edge-zone:hover::after,.work-edge-zone:focus-visible::after{ opacity:1; transform:translateX(-50%) translateY(-2px); }
+  .stage.is-view-transitioning{ cursor:default; }
 
   /* subtle worn-corner highlights on the hardcover */
   .book-shell::before, .book-shell::after{
@@ -210,6 +419,7 @@
       5px 6px 0 var(--paper-edge-5),
       /* pop-off shadow */
       0 12px 20px rgba(0,0,0,0.35);
+    transition:opacity 260ms ease;
   }
 
   /* ---------- BOARDS (the static current spread) ---------- */
@@ -856,7 +1066,9 @@
     color: rgba(237,231,216,0.75);
     font-size: 13px;
     letter-spacing: 1px;
+    z-index:800;
   }
+  .stage.is-work-document .chrome{ position:fixed; }
   .chrome button{
     font-family: var(--font-tab); font-size: 14px;
     background: rgba(255,255,255,0.06);
@@ -881,11 +1093,27 @@
     }
     .chrome{ bottom: 12px; }
     .turn-zone{ width: 70px; height: 70px; }
+    .project-folder:hover .project-preview,
+    .project-folder:focus-visible .project-preview,
+    .project-folder.is-peeking .project-preview{
+      transform:translateX(-50%) translateY(-20px) rotate(1deg);
+    }
+  }
+  @media (max-width: 480px){
+    .folder-tab-label{ font-size:31px; }
+    .folder-number{ font-size:17px; }
+    .folder-category{ font-size:18px; }
+    .folder-description{ font-size:26px; line-height:1.22; }
+    .work-kicker{ font-size:14px; }
+    .work-note{ font-size:21px; }
+    .stage.is-work-document .chrome{ gap:8px; white-space:nowrap; }
+    .stage.is-work-document .chrome button{ padding:6px 10px; }
   }
 
   /* reduced motion */
   @media (prefers-reduced-motion: reduce){
     .flip-leaf{ transition: none !important; }
+    .project-folder,.folder-visual,.folder-tab-label,.project-preview{ transition-duration:120ms !important; }
   }
 </style>
 </head>
@@ -910,7 +1138,10 @@
     <img class="craft-item craft-glue" src="images/glue.png" alt="">
     <img class="craft-item craft-scissors" src="images/scissors.png" alt="">
     <img class="craft-item craft-tape" src="images/tape.png" alt="">
+  </div>
 
+  <div class="book-frame" id="bookFrame">
+  <div class="book-motion" id="bookMotion">
     <div class="book-shell">
     <div class="book-pages" id="bookPages">
       <div class="board board-left" id="boardLeft"></div>
@@ -946,7 +1177,24 @@
       <button type="button" class="page-side-zone next-side" data-dir="next" aria-label="Turn to the next spread"></button>
     </div>
 
-    </div>
+    <section class="work-view" id="workView" aria-label="Selected projects" aria-hidden="true">
+      <span class="work-divider" aria-hidden="true"></span>
+      <div class="work-heading">
+        <div>
+          <p class="work-kicker">Selected work / file index</p>
+          <h1 class="work-title">project folders</h1>
+        </div>
+        <p class="work-note">hover, focus, or tap a folder to peek inside</p>
+      </div>
+      <div class="folder-stack" id="folderStack"></div>
+      <span class="work-paperclip" aria-hidden="true"></span>
+      <button type="button" class="work-back" id="workBack">← back to notebook</button>
+      <button type="button" class="work-edge-zone prev" data-work-target="0" aria-label="Previous page"></button>
+      <button type="button" class="work-edge-zone next" data-work-target="5" aria-label="Next page"></button>
+    </section>
+
+    </div><!-- /.book-shell -->
+  </div><!-- /.book-motion -->
   </div>
 
   <div class="chrome">
@@ -957,6 +1205,55 @@
 </div>
 
 <script>
+  // ============================================================
+  //  PROJECT FOLDERS
+  //  Replace these values when real case studies are ready.
+  //  For each image, add the file under images/ and set preview,
+  //  for example: preview: 'images/project-one.jpg'.
+  // ============================================================
+  const projects = [
+    {
+      id: 'project-1',
+      title: 'Project One',
+      category: 'UI / UX Design',
+      shortDescription: 'A concise overview of the challenge, approach, and outcome will live here.',
+      preview: '', // Add the Project One preview image path here later.
+      projectLink: '#',
+      folderColor: '#B98B56',
+      accentColor: '#6E4327'
+    },
+    {
+      id: 'project-2',
+      title: 'Project Two',
+      category: 'Creative Technology',
+      shortDescription: 'Use this space for a short, employer-friendly project summary.',
+      preview: '', // Add the Project Two preview image path here later.
+      projectLink: '#',
+      folderColor: '#E2D3B7',
+      accentColor: '#765D3F'
+    },
+    {
+      id: 'project-3',
+      title: 'Project Three',
+      category: 'Frontend Development',
+      shortDescription: 'Summarize the product, your role, and the result in one sentence.',
+      preview: '', // Add the Project Three preview image path here later.
+      projectLink: '#',
+      folderColor: '#7895A8',
+      accentColor: '#304F63'
+    },
+    {
+      id: 'project-4',
+      title: 'Project Four',
+      category: 'Software / VFX',
+      shortDescription: 'Add the most useful context for a recruiter reviewing this project.',
+      preview: '', // Add the Project Four preview image path here later.
+      projectLink: '#',
+      folderColor: '#C86F62',
+      accentColor: '#74372F'
+    }
+  ];
+
   // ============================================================
   //  SPREAD CONTENT
   //  Each spread has: theme, left html, right html
@@ -1320,25 +1617,57 @@
   const progressEl = document.getElementById('progress');
   const navLinks   = document.querySelectorAll('.site-nav a');
   const brandHome  = document.getElementById('brandHome');
+  const bookFrame  = document.getElementById('bookFrame');
+  const bookMotion = document.getElementById('bookMotion');
+  const bookShell  = document.querySelector('.book-shell');
+  const bookPages  = document.getElementById('bookPages');
+  const workView   = document.getElementById('workView');
+  const folderStack = document.getElementById('folderStack');
+  const workBack   = document.getElementById('workBack');
 
   const TOTAL = spreads.length;
   let currentSpread = 0;
   let isFlipping = false;
+  let isTransitioning = false;
+  let viewMode = 'notebook';
+  let bookScale = 1;
+  let workScale = .6;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   // Scale the complete object as one unit so its internal layout never reflows.
   function fitBookToViewport(){
     const horizontalRoom = Math.max(0, window.innerWidth - 48);
     const verticalRoom = Math.max(0, window.innerHeight - 132);
-    const scale = 0.88 * Math.min(
+    bookScale = 0.88 * Math.min(
       1,
       horizontalRoom / 1448,
       verticalRoom / 825
     );
 
+    // Portrait Work is a close-up on desktop and uses the available width on
+    // narrow screens without ever cropping the notebook's outer cover.
+    // Height is deliberately not fitted: the complete physical notebook scrolls.
+    const workWidthRatio = window.innerWidth <= 780 ? 0.9 : 0.78;
+    const targetWorkWidth = Math.min(
+      window.innerWidth - (window.innerWidth <= 480 ? 28 : 64),
+      window.innerWidth * workWidthRatio
+    );
+    workScale = Math.max(0.25, targetWorkWidth / 825);
+    const workBookWidth = 825 * workScale;
+    const workBookHeight = 1320 * workScale;
+    const workTopGap = Math.max(72, Math.min(112, window.innerHeight * 0.1));
+    const workBottomGap = Math.max(80, Math.min(120, window.innerHeight * 0.12));
+
     document.documentElement.style.setProperty(
       '--book-scale',
-      Math.max(0, scale).toFixed(4)
+      Math.max(0, bookScale).toFixed(4)
     );
+    document.documentElement.style.setProperty('--work-scale', Math.max(0, workScale).toFixed(4));
+    document.documentElement.style.setProperty('--work-book-width', `${workBookWidth.toFixed(1)}px`);
+    document.documentElement.style.setProperty('--work-book-height', `${workBookHeight.toFixed(1)}px`);
+    document.documentElement.style.setProperty('--work-top-gap', `${workTopGap.toFixed(1)}px`);
+    document.documentElement.style.setProperty('--work-bottom-gap', `${workBottomGap.toFixed(1)}px`);
+    document.documentElement.style.setProperty('--work-stage-height', `${(workTopGap + workBookHeight + workBottomGap).toFixed(1)}px`);
   }
 
   // Drag the notebook as one unit while leaving its page and tab controls usable.
@@ -1347,11 +1676,13 @@
   let dragStartY = 0;
   let workspaceOffsetX = 0;
   let workspaceOffsetY = 0;
+  let activeDragPointerId = null;
 
   function setWorkspaceOffset(nextX, nextY){
     const workspace = document.querySelector('.craft-workspace');
     const maxX = Math.max(0, (workspace.offsetWidth - stage.clientWidth) / 2);
-    const maxY = Math.max(0, (workspace.offsetHeight - stage.clientHeight) / 2);
+    const visibleStageHeight = viewMode === 'work' ? window.innerHeight : stage.clientHeight;
+    const maxY = Math.max(0, (workspace.offsetHeight - visibleStageHeight) / 2);
     workspaceOffsetX = Math.min(maxX, Math.max(-maxX, nextX));
     workspaceOffsetY = Math.min(maxY, Math.max(-maxY, nextY));
     document.documentElement.style.setProperty('--workspace-x', `${workspaceOffsetX}px`);
@@ -1359,13 +1690,27 @@
   }
 
   function isInteractiveTarget(target){
-    return target.closest('button, a, input, textarea, select, video');
+    return target.closest('button, a, input, textarea, select, video, .book-shell');
+  }
+
+  function workspacePanIsLocked(){
+    return isTransitioning || viewMode === 'work' || stage.classList.contains('is-work-document');
+  }
+
+  function cancelWorkspaceDrag(){
+    isDragging = false;
+    stage.classList.remove('is-dragging');
+    if (activeDragPointerId !== null && stage.hasPointerCapture(activeDragPointerId)) {
+      stage.releasePointerCapture(activeDragPointerId);
+    }
+    activeDragPointerId = null;
   }
 
   stage.addEventListener('pointerdown', event => {
-    if (event.button !== 0 || isInteractiveTarget(event.target)) return;
+    if (workspacePanIsLocked() || event.button !== 0 || isInteractiveTarget(event.target)) return;
 
     isDragging = true;
+    activeDragPointerId = event.pointerId;
     dragStartX = event.clientX - workspaceOffsetX;
     dragStartY = event.clientY - workspaceOffsetY;
     stage.classList.add('is-dragging');
@@ -1374,22 +1719,60 @@
 
   stage.addEventListener('pointermove', event => {
     if (!isDragging) return;
+    if (workspacePanIsLocked()) {
+      cancelWorkspaceDrag();
+      return;
+    }
 
     setWorkspaceOffset(event.clientX - dragStartX, event.clientY - dragStartY);
   });
 
   function stopDragging(event){
     if (!isDragging) return;
-
-    isDragging = false;
-    stage.classList.remove('is-dragging');
-    if (stage.hasPointerCapture(event.pointerId)) {
-      stage.releasePointerCapture(event.pointerId);
-    }
+    cancelWorkspaceDrag();
   }
 
   stage.addEventListener('pointerup', stopDragging);
   stage.addEventListener('pointercancel', stopDragging);
+
+  function renderProjectFolders(){
+    folderStack.innerHTML = projects.map((project, index) => {
+      const preview = project.preview
+        ? `<img src="${project.preview}" alt="Preview of ${project.title}">`
+        : `<span>preview image<br>coming soon</span>`;
+
+      return `
+        <a class="project-folder" href="${project.projectLink}" aria-label="Preview ${project.title}: ${project.category}"
+          id="${project.id}" style="--folder:${project.folderColor}; --accent:${project.accentColor};">
+          <span class="folder-visual">
+            <span class="folder-back" aria-hidden="true"></span>
+            <span class="project-preview"><span class="preview-art">${preview}</span></span>
+            <span class="folder-front">
+              <span class="folder-meta">
+                <span class="folder-number">PROJECT_${String(index + 1).padStart(2, '0')}</span>
+                <span class="folder-category">${project.category}</span>
+              </span>
+              <span class="folder-description">${project.shortDescription}</span>
+            </span>
+          </span>
+          <span class="folder-tab-label">${project.title}</span>
+        </a>`;
+    }).join('');
+
+    // On touch, the first tap peeks; a second tap follows a real project URL.
+    folderStack.querySelectorAll('.project-folder').forEach(folder => {
+      folder.addEventListener('click', event => {
+        const touchLike = window.matchMedia('(hover: none)').matches;
+        if (touchLike && !folder.classList.contains('is-peeking')) {
+          event.preventDefault();
+          folderStack.querySelectorAll('.is-peeking').forEach(open => open.classList.remove('is-peeking'));
+          folder.classList.add('is-peeking');
+          return;
+        }
+        if (folder.getAttribute('href') === '#') event.preventDefault();
+      });
+    });
+  }
 
   // ============================================================
   //  Render helpers
@@ -1404,9 +1787,9 @@
   }
   function updateNav(){
     const s = spreads[currentSpread];
-    progressEl.textContent = `${s.label} — ${currentSpread + 1}/${TOTAL}`;
-    btnPrev.disabled = currentSpread === 0;
-    btnNext.disabled = currentSpread === TOTAL - 1;
+    progressEl.textContent = viewMode === 'work' ? 'work — 4 projects' : `${s.label} — ${currentSpread + 1}/${TOTAL}`;
+    btnPrev.disabled = viewMode === 'notebook' && currentSpread === 0;
+    btnNext.disabled = viewMode === 'notebook' && currentSpread === TOTAL - 1;
     navLinks.forEach(a => {
       const t = parseInt(a.dataset.target, 10);
       // highlight the nav item whose key group we're in
@@ -1416,78 +1799,228 @@
   }
 
   function returnHome(){
-    if (isFlipping) return;
-    currentSpread = 0;
+    if (isFlipping || isTransitioning) return;
     setWorkspaceOffset(0, 0);
-    applyBoard(boardLeft, 'left', currentSpread);
-    applyBoard(boardRight, 'right', currentSpread);
+    flipTo(0);
+  }
+
+  function finishViewTransition(){
+    flipLeaf.style.display = 'none';
+    flipLeaf.classList.remove('is-flipping');
+    bookShell.classList.remove('is-transitioning');
+    stage.classList.remove('is-view-transitioning');
+    bookMotion.style.transform = '';
+    isFlipping = false;
+    isTransitioning = false;
+  }
+
+  function waitForAnimation(animation){
+    return animation.finished.catch(() => undefined);
+  }
+
+  // One page-turn implementation for every navigation path. Comparing the
+  // destination with the source guarantees consistent physical direction.
+  async function animatePageBetween(source, destination, duration = 900){
+    if (source === destination) return;
+    const forward = destination > source;
+
+    if (forward) {
+      applyFace(leafFront, 'front', 'right', source);
+      applyFace(leafBack, 'back', 'left', destination);
+      applyBoard(boardRight, 'right', destination);
+    } else {
+      applyFace(leafFront, 'front', 'right', destination);
+      applyFace(leafBack, 'back', 'left', source);
+      applyBoard(boardLeft, 'left', destination);
+    }
+
+    const startRotation = forward ? 0 : -180;
+    const endRotation = forward ? -180 : 0;
+    flipLeaf.style.transform = `rotateY(${startRotation}deg)`;
+    flipLeaf.style.display = 'block';
+    flipLeaf.classList.add('is-flipping');
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    const keyframes = reduceMotion.matches
+      ? [{ opacity:1 }, { opacity:0 }]
+      : [
+          { transform:`rotateY(${startRotation}deg)`, opacity:1 },
+          { transform:`rotateY(${endRotation}deg)`, opacity:1 }
+        ];
+    const animation = flipLeaf.animate(keyframes, {
+      duration:reduceMotion.matches ? 140 : duration,
+      easing:'cubic-bezier(.55,.05,.25,1)',
+      fill:'forwards'
+    });
+    await waitForAnimation(animation);
+
+    applyBoard(boardLeft, 'left', destination);
+    applyBoard(boardRight, 'right', destination);
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    animation.cancel();
+    flipLeaf.style.display = 'none';
+    flipLeaf.classList.remove('is-flipping');
+  }
+
+  // Enter Work directly: rotate, scale, and reposition the same physical shell
+  // into its scrollable portrait layout without an intermediate page turn.
+  // bookMotion owns the measured FLIP translation while bookShell owns rotation
+  // and uniform scale.
+  async function enterWork(){
+    if (isTransitioning || viewMode === 'work') return;
+    isTransitioning = true;
+    isFlipping = true;
+    cancelWorkspaceDrag();
+    stage.classList.add('is-view-transitioning');
+    bookShell.classList.add('is-transitioning');
+
+    currentSpread = 1;
+
+    const startRect = bookShell.getBoundingClientRect();
+
+    document.documentElement.classList.add('work-mode');
+    document.body.classList.add('work-mode');
+    stage.classList.add('is-work-document');
+    bookShell.classList.add('is-work');
+    workView.classList.add('is-visible');
+    workView.setAttribute('aria-hidden', 'false');
+    bookPages.setAttribute('aria-hidden', 'true');
+    window.scrollTo(0, 0);
+
+    const finalRect = bookShell.getBoundingClientRect();
+    const deltaX = startRect.left + startRect.width / 2 - (finalRect.left + finalRect.width / 2);
+    const deltaY = startRect.top + startRect.height / 2 - (finalRect.top + finalRect.height / 2);
+    bookMotion.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+    const duration = reduceMotion.matches ? 160 : 960;
+    const shellAnimation = reduceMotion.matches
+      ? bookShell.animate(
+          [{ opacity:1 }, { opacity:.35 }, { opacity:1 }],
+          { duration, easing:'ease-out', fill:'forwards' }
+        )
+      : bookShell.animate([
+          { transform:`translate(-50%, -50%) scale(${bookScale}) rotate(0deg)` },
+          { transform:`translate(-50%, -50%) scale(${workScale}) rotate(90deg)` }
+        ], { duration, easing:'cubic-bezier(.22,1,.36,1)', fill:'forwards' });
+    const motionAnimation = bookMotion.animate(
+      [
+        { transform:`translate(${deltaX}px, ${deltaY}px)` },
+        { transform:'translate(0, 0)' }
+      ],
+      { duration, easing:'cubic-bezier(.22,1,.36,1)', fill:'forwards' }
+    );
+
+    await Promise.all([
+      waitForAnimation(shellAnimation),
+      waitForAnimation(motionAnimation)
+    ]);
+    currentSpread = 1;
+    viewMode = 'work';
     updateNav();
+    bookShell.getAnimations().forEach(animation => animation.cancel());
+    bookMotion.getAnimations().forEach(animation => animation.cancel());
+    finishViewTransition();
+  }
+
+  async function exitWork(target){
+    if (isTransitioning || viewMode !== 'work' || target < 0 || target >= TOTAL) return;
+    isTransitioning = true;
+    isFlipping = true;
+    stage.classList.add('is-view-transitioning');
+    bookShell.classList.add('is-transitioning');
+
+    // Prepare only the requested destination beneath the Work surface. It
+    // crossfades into view as the same shell rotates back to landscape.
+    applyBoard(boardLeft, 'left', target);
+    applyBoard(boardRight, 'right', target);
+    bookPages.style.opacity = '0';
+    const startRect = bookShell.getBoundingClientRect();
+
+    document.documentElement.classList.remove('work-mode');
+    document.body.classList.remove('work-mode');
+    stage.classList.remove('is-work-document');
+    bookShell.classList.remove('is-work');
+    window.scrollTo(0, 0);
+
+    const finalRect = bookShell.getBoundingClientRect();
+    const deltaX = startRect.left + startRect.width / 2 - (finalRect.left + finalRect.width / 2);
+    const deltaY = startRect.top + startRect.height / 2 - (finalRect.top + finalRect.height / 2);
+    bookMotion.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+    const duration = reduceMotion.matches ? 160 : 760;
+    const shellAnimation = reduceMotion.matches
+      ? bookShell.animate(
+          [{ opacity:1 }, { opacity:.35 }, { opacity:1 }],
+          { duration, easing:'ease-out', fill:'forwards' }
+        )
+      : bookShell.animate([
+          { transform:`translate(-50%, -50%) scale(${workScale}) rotate(90deg)` },
+          { transform:`translate(-50%, -50%) scale(${bookScale}) rotate(0deg)` }
+        ], { duration, easing:'cubic-bezier(.22,1,.36,1)', fill:'forwards' });
+    const motionAnimation = bookMotion.animate(
+      [
+        { transform:`translate(${deltaX}px, ${deltaY}px)` },
+        { transform:'translate(0, 0)' }
+      ],
+      { duration, easing:'cubic-bezier(.22,1,.36,1)', fill:'forwards' }
+    );
+    const workAnimation = workView.animate(
+      [{ opacity:1 }, { opacity:0 }],
+      { duration:reduceMotion.matches ? duration : 320, easing:'ease-in', fill:'forwards' }
+    );
+    const pagesAnimation = bookPages.animate(
+      [{ opacity:0 }, { opacity:1 }],
+      {
+        duration:reduceMotion.matches ? duration : 360,
+        delay:reduceMotion.matches ? 0 : 180,
+        easing:'ease-out',
+        fill:'both'
+      }
+    );
+
+    await Promise.all([
+      waitForAnimation(shellAnimation),
+      waitForAnimation(motionAnimation),
+      waitForAnimation(workAnimation),
+      waitForAnimation(pagesAnimation)
+    ]);
+
+    viewMode = 'notebook';
+    currentSpread = target;
+    workView.classList.remove('is-visible');
+    workView.setAttribute('aria-hidden', 'true');
+    bookPages.setAttribute('aria-hidden', 'false');
+    bookPages.style.opacity = '';
+    updateNav();
+    workView.getAnimations().forEach(animation => animation.cancel());
+    bookPages.getAnimations().forEach(animation => animation.cancel());
+    bookShell.getAnimations().forEach(animation => animation.cancel());
+    bookMotion.getAnimations().forEach(animation => animation.cancel());
+    finishViewTransition();
   }
 
   // ============================================================
   //  Flip animation (single animating leaf; no ghost pages)
   // ============================================================
-  function flipTo(target){
-    if (isFlipping) return;
-    if (target === currentSpread) return;
+  async function flipTo(target){
+    if (isFlipping || isTransitioning) return;
     if (target < 0 || target >= TOTAL) return;
+    if (viewMode === 'work') {
+      if (target >= 1 && target <= 4) return;
+      exitWork(target);
+      return;
+    }
+    if (target >= 1 && target <= 4) {
+      enterWork();
+      return;
+    }
+    if (target === currentSpread) return;
 
     isFlipping = true;
-    const src = currentSpread;
-    const forward = target > src;
-
-    // Configure the animating leaf so its two faces show:
-    //   - what's leaving (visible now)
-    //   - what's arriving (visible when flip finishes)
-    if (forward) {
-      applyFace(leafFront, 'front', 'right', src);     // right page leaving
-      applyFace(leafBack,  'back',  'left',  target);  // left page arriving
-
-      // Board that will be REVEALED at end (right side) — set now, hidden by leaf.front
-      applyBoard(boardRight, 'right', target);
-    } else {
-      applyFace(leafFront, 'front', 'right', target);  // right page arriving
-      applyFace(leafBack,  'back',  'left',  src);     // left page leaving
-
-      // Board that will be REVEALED at end (left side) — set now, hidden by leaf.back
-      applyBoard(boardLeft, 'left', target);
-    }
-
-    const startRot = forward ? 0 : -180;
-    const endRot   = forward ? -180 : 0;
-
-    flipLeaf.style.transform = `rotateY(${startRot}deg)`;
-    flipLeaf.style.display = 'block';
-    flipLeaf.classList.add('is-flipping');
-
-    // wait a frame so the initial transform paints
-    requestAnimationFrame(() => {
-      const anim = flipLeaf.animate(
-        [
-          { transform: `rotateY(${startRot}deg)` },
-          { transform: `rotateY(${endRot}deg)` }
-        ],
-        { duration: 900, easing: 'cubic-bezier(0.55, 0.05, 0.25, 1)', fill: 'forwards' }
-      );
-
-      anim.onfinish = () => {
-        // Update the OTHER board (currently hidden under the leaf's landing face)
-        if (forward) {
-          applyBoard(boardLeft, 'left', target);
-        } else {
-          applyBoard(boardRight, 'right', target);
-        }
-
-        // one frame later, hide the leaf so exposed boards take over cleanly
-        requestAnimationFrame(() => {
-          flipLeaf.style.display = 'none';
-          flipLeaf.classList.remove('is-flipping');
-          currentSpread = target;
-          updateNav();
-          isFlipping = false;
-        });
-      };
-    });
+    await animatePageBetween(currentSpread, target);
+    currentSpread = target;
+    updateNav();
+    isFlipping = false;
   }
 
   // ============================================================
@@ -1499,9 +2032,13 @@
       else flipTo(currentSpread - 1);
     });
   });
-  btnNext.addEventListener('click', () => flipTo(currentSpread + 1));
-  btnPrev.addEventListener('click', () => flipTo(currentSpread - 1));
+  btnNext.addEventListener('click', () => flipTo(viewMode === 'work' ? 5 : currentSpread + 1));
+  btnPrev.addEventListener('click', () => flipTo(viewMode === 'work' ? 0 : currentSpread - 1));
   brandHome.addEventListener('click', returnHome);
+  workBack.addEventListener('click', () => flipTo(0));
+  document.querySelectorAll('[data-work-target]').forEach(control => {
+    control.addEventListener('click', () => flipTo(parseInt(control.dataset.workTarget, 10)));
+  });
 
   navLinks.forEach(a => {
     a.addEventListener('click', () => {
@@ -1509,8 +2046,16 @@
     });
   });
   window.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') flipTo(currentSpread + 1);
-    if (e.key === 'ArrowLeft')  flipTo(currentSpread - 1);
+    if (e.key === 'ArrowRight') flipTo(viewMode === 'work' ? 5 : currentSpread + 1);
+    if (e.key === 'ArrowLeft')  flipTo(viewMode === 'work' ? 0 : currentSpread - 1);
+    if (viewMode === 'work' && (e.key === 'ArrowUp' || e.key === 'PageUp')) {
+      e.preventDefault();
+      flipTo(0);
+    }
+    if (viewMode === 'work' && (e.key === 'ArrowDown' || e.key === 'PageDown')) {
+      e.preventDefault();
+      flipTo(5);
+    }
   });
   window.addEventListener('resize', () => {
     fitBookToViewport();
@@ -1526,6 +2071,7 @@
   // ============================================================
   //  Init — book opens directly on About
   // ============================================================
+  renderProjectFolders();
   fitBookToViewport();
   applyBoard(boardLeft,  'left',  currentSpread);
   applyBoard(boardRight, 'right', currentSpread);
